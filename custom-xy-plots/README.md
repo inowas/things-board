@@ -4,7 +4,7 @@ A custom [ThingsBoard](https://thingsboard.io/) widget that plots one array of v
 
 Unlike a standard time-series widget, this one does **not** plot telemetry against time. It reads the *latest value* of each data key and expects that value to be an **array** (or a JSON string that parses to one). It then pairs the X array and Y array element-by-element into points. This makes it well suited to **vertical profiles and crossplots** — for example electrical conductivity versus depth, or temperature versus depth — where both variables are stored as arrays on a single record.
 
-![Custom XY Chart screenshot](screenshot.png)
+![Custom XY Chart screenshot](images/screenshot.png)
 
 ## Features
 
