@@ -1,0 +1,186 @@
+{
+  "schema": {
+    "type": "object",
+    "title": "Custom XY Chart Settings",
+    "properties": {
+      "xKey": {
+        "title": "X data key (array)",
+        "type": "string",
+        "default": "x"
+      },
+      "yKey": {
+        "title": "Y data key (array)",
+        "type": "string",
+        "default": "y"
+      },
+
+      "xLabel": { "title": "X axis label", "type": "string", "default": "" },
+      "xLog": { "title": "Logarithmic X axis", "type": "boolean", "default": false },
+      "xInverse": { "title": "Invert X axis", "type": "boolean", "default": false },
+      "xOnTop": { "title": "X axis on top", "type": "boolean", "default": false },
+      "xMin": { "title": "X min (blank = auto)", "type": "number" },
+      "xMax": { "title": "X max (blank = auto)", "type": "number" },
+
+      "yLabel": { "title": "Y axis label", "type": "string", "default": "" },
+      "yLog": { "title": "Logarithmic Y axis", "type": "boolean", "default": false },
+      "yInverse": { "title": "Invert Y axis (e.g. depth downward)", "type": "boolean", "default": false },
+      "yMin": { "title": "Y min (blank = auto)", "type": "number" },
+      "yMax": { "title": "Y max (blank = auto)", "type": "number" },
+      "showLine": { "title": "Draw line (uncheck for scatter)", "type": "boolean", "default": true },
+      "showSymbol": { "title": "Show point markers", "type": "boolean", "default": true },
+      "symbolSize": { "title": "Marker size (px)", "type": "number", "default": 4 },
+      "lineWidth": { "title": "Line width (px)", "type": "number", "default": 1.5 },
+      "color": { "title": "Series colour", "type": "string", "default": "#1f77b4" },
+      "smooth": { "title": "Smooth line", "type": "boolean", "default": false },
+
+      "y2Enabled": { "title": "Enable secondary series (Y2)", "type": "boolean", "default": false },
+      "x2Key": { "title": "X2 data key (blank = reuse X key)", "type": "string", "default": "" },
+      "y2Key": { "title": "Y2 data key (array)", "type": "string", "default": "" },
+      "y2Label": { "title": "Y2 axis label", "type": "string", "default": "" },
+      "y2OnRight": { "title": "Y2 axis on right (uncheck for left)", "type": "boolean", "default": true },
+      "y2Log": { "title": "Logarithmic Y2 axis", "type": "boolean", "default": false },
+      "y2Inverse": { "title": "Invert Y2 axis", "type": "boolean", "default": false },
+      "y2Min": { "title": "Y2 min (blank = auto)", "type": "number" },
+      "y2Max": { "title": "Y2 max (blank = auto)", "type": "number" },
+      "y2ShowLine": { "title": "Draw Y2 line (uncheck for scatter)", "type": "boolean", "default": true },
+      "y2ShowSymbol": { "title": "Show Y2 point markers", "type": "boolean", "default": true },
+      "y2SymbolSize": { "title": "Y2 marker size (px)", "type": "number", "default": 4 },
+      "y2LineWidth": { "title": "Y2 line width (px)", "type": "number", "default": 1.5 },
+      "y2Color": { "title": "Y2 series colour", "type": "string", "default": "#e91e63" },
+      "y2Smooth": { "title": "Smooth Y2 line", "type": "boolean", "default": false },
+
+      "thresholds": {
+        "title": "Threshold lines",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "value": { "title": "Value", "type": "number" },
+            "axis": { "title": "Axis", "type": "string", "default": "y" },
+            "color": { "title": "Colour", "type": "string", "default": "#e91e63" },
+            "style": { "title": "Line style", "type": "string", "default": "dashed" },
+            "label": { "title": "Label", "type": "string", "default": "" }
+          },
+          "required": ["value"]
+        }
+      },
+
+      "bands": {
+        "title": "Shaded bands",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "from": { "title": "From", "type": "number" },
+            "to": { "title": "To", "type": "number" },
+            "axis": { "title": "Axis", "type": "string", "default": "y" },
+            "color": { "title": "Colour", "type": "string", "default": "#4caf50" },
+            "opacity": { "title": "Opacity (0-1)", "type": "number", "default": 0.2 },
+            "label": { "title": "Label", "type": "string", "default": "" }
+          },
+          "required": ["from", "to"]
+        }
+      }
+    },
+    "required": []
+  },
+  "form": [
+    {
+      "type": "fieldset",
+      "title": "Data keys",
+      "items": [ "xKey", "yKey" ]
+    },
+    {
+      "type": "fieldset",
+      "title": "X axis",
+      "items": [
+        "xLabel", "xLog", "xInverse", "xOnTop", "xMin", "xMax"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Primary series (Y1)",
+      "items": [
+        "yLabel", "yLog", "yInverse", "yMin", "yMax",
+        "showLine", "showSymbol", "symbolSize", "lineWidth",
+        { "key": "color", "type": "color" },
+        "smooth"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Secondary series (Y2)",
+      "items": [
+        "y2Enabled",
+        {
+          "type": "section",
+          "condition": "model.y2Enabled === true",
+          "items": [
+            "x2Key", "y2Key", "y2Label", "y2OnRight",
+            "y2Log", "y2Inverse", "y2Min", "y2Max",
+            "y2ShowLine", "y2ShowSymbol", "y2SymbolSize", "y2LineWidth",
+            { "key": "y2Color", "type": "color" },
+            "y2Smooth"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Threshold lines",
+      "items": [
+        {
+          "key": "thresholds",
+          "items": [
+            "thresholds[].value",
+            {
+              "key": "thresholds[].axis",
+              "type": "select",
+              "titleMap": [
+                { "value": "x", "name": "X" },
+                { "value": "y", "name": "Y1" },
+                { "value": "y2", "name": "Y2" }
+              ]
+            },
+            { "key": "thresholds[].color", "type": "color" },
+            {
+              "key": "thresholds[].style",
+              "type": "select",
+              "titleMap": [
+                { "value": "solid", "name": "Solid" },
+                { "value": "dashed", "name": "Dashed" },
+                { "value": "dotted", "name": "Dotted" }
+              ]
+            },
+            "thresholds[].label"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Shaded bands",
+      "items": [
+        {
+          "key": "bands",
+          "items": [
+            "bands[].from",
+            "bands[].to",
+            {
+              "key": "bands[].axis",
+              "type": "select",
+              "titleMap": [
+                { "value": "x", "name": "X" },
+                { "value": "y", "name": "Y1" },
+                { "value": "y2", "name": "Y2" }
+              ]
+            },
+            { "key": "bands[].color", "type": "color" },
+            "bands[].opacity",
+            "bands[].label"
+          ]
+        }
+      ]
+    }
+  ]
+}
