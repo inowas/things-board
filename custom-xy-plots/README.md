@@ -6,8 +6,6 @@ Unlike a standard time-series widget, this one does **not** plot telemetry again
 
 ![Custom XY Chart screenshot](screenshot.png)
 
-> _Replace `screenshot.png` with an actual export of the widget. One clear screenshot is the most useful part of this README._
-
 ## Features
 
 - **Array-based plotting** — pairs the X and Y arrays index-by-index (`[x[i], y[i]]`); series length is the shorter of the two.
