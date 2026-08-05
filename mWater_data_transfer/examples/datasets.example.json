@@ -1,0 +1,16 @@
+[
+  {
+    "url": "https://api.mwater.co/v3/integrations/exports/<export-id>.json",
+    "device": "",
+    "dateField": "Time",
+    "pointField": "Name",
+    "enabled": true
+  },
+  {
+    "url": "https://api.mwater.co/v3/integrations/exports/<export-id>.json",
+    "device": "Nukus climate",
+    "dateField": "Date",
+    "pointField": "",
+    "enabled": false
+  }
+]

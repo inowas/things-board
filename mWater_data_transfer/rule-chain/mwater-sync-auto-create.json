@@ -1,0 +1,289 @@
+{
+  "ruleChain": {
+    "name": "mWater Sync (auto-create)",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": true,
+    "configuration": null,
+    "additionalInfo": {
+      "description": ""
+    }
+  },
+  "metadata": {
+    "version": 8,
+    "firstNodeIndex": null,
+    "nodes": [
+      {
+        "type": "org.thingsboard.rule.engine.debug.TbMsgGeneratorNode",
+        "name": "Tick",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 2,
+        "configuration": {
+          "msgCount": 0,
+          "periodInSeconds": 10,
+          "scriptLang": "JS",
+          "jsScript": "var msg = {};\nvar metadata = {};\nvar msgType = \"MWATER_TICK\";\n\nreturn { msg: msg, metadata: metadata, msgType: msgType };",
+          "tbelScript": "var msg = {};\nvar metadata = {};\nvar msgType = \"MWATER_TICK\";\n\nreturn { msg: msg, metadata: metadata, msgType: msgType };",
+          "originatorId": "3cc473a0-877f-11f1-8ad4-33c0a4dccc58",
+          "originatorType": "DEVICE"
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 40,
+          "layoutY": 235
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "Load datasets",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 1,
+        "configuration": {
+          "fetchTo": "METADATA",
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "datasets"
+          ],
+          "latestTsKeyNames": [],
+          "tellFailureIfAbsent": true,
+          "getLatestValueWithTs": false
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 250,
+          "layoutY": 235
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Split datasets",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var raw = metadata.datasets || metadata.ss_datasets || msg.datasets;\nvar list = (typeof raw === \"string\") ? JSON.parse(raw) : raw;\nvar out = [];\nfor (var i = 0; i < list.length; i++) {\n    var d = list[i];\n    if (d.enabled === false) { continue; }\n    out.push({\n        msg: {},\n        metadata: { url: d.url, device: d.device || \"\", dateField: d.dateField || \"Date\", pointField: d.pointField || \"\" },\n        msgType: \"MWATER_FETCH\"\n    });\n}\nreturn out;",
+          "tbelScript": "return msg;"
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 460,
+          "layoutY": 235
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.rest.TbRestApiCallNode",
+        "name": "Fetch mWater",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 3,
+        "configuration": {
+          "restEndpointUrlPattern": "${url}",
+          "requestMethod": "GET",
+          "useSimpleClientHttpFactory": false,
+          "parseToPlainText": false,
+          "ignoreRequestBody": false,
+          "enableProxy": false,
+          "useSystemProxyProperties": false,
+          "proxyScheme": null,
+          "proxyHost": null,
+          "proxyPort": 0,
+          "proxyUser": null,
+          "proxyPassword": null,
+          "readTimeoutMs": 0,
+          "maxParallelRequestsCount": 0,
+          "headers": {},
+          "credentials": {
+            "type": "anonymous"
+          },
+          "maxInMemoryBufferSizeInKb": 16384
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 670,
+          "layoutY": 235
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.transform.TbSplitArrayMsgNode",
+        "name": "Split rows",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {},
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 880,
+          "layoutY": 235
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Transform",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "var dateField  = metadata.dateField  || \"Date\";\nvar pointField = metadata.pointField || \"\";\nvar base       = metadata.device || \"\";\n\nvar SKIP_POINTS = { \"\": true, \"Other (please specify)\": true };\n\nvar target;\nif (pointField) {\n    var point = (msg[pointField] != null) ? (\"\" + msg[pointField]).trim() : \"\";\n    if (SKIP_POINTS[point]) { target = \"\"; }\n    else { target = base ? (base + \" - \" + point) : point; }\n} else {\n    target = base;\n}\n\nvar raw = msg[dateField];\nvar ts = null;\nif (typeof raw === \"number\") {\n    if (raw < 100000)    { ts = (raw - 25569) * 86400000; }\n    else if (raw < 1e11) { ts = raw * 1000; }\n    else                 { ts = raw; }\n} else if (typeof raw === \"string\" && raw !== \"\") {\n    var m = raw.match(/^(\\d{4})-(\\d{2})-(\\d{2})(?:[ T](\\d{2}):(\\d{2})(?::(\\d{2}))?)?/);\n    if (m) { ts = Date.UTC(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0)); }\n    else { var p = Date.parse(raw); if (!isNaN(p)) { ts = p; } }\n}\n\nvar EXCLUDE = { \"code\": true, \"submitted on\": true, \"submitted\": true, \"submitted_on\": true, \"Location\": true };\nEXCLUDE[dateField] = true;\nif (pointField) { EXCLUDE[pointField] = true; }\n\nvar values = {};\nfor (var k in msg) {\n    if (EXCLUDE[k]) { continue; }\n    var v = msg[k];\n    if (v === null || v === \"\") { continue; }\n    values[k] = v;\n}\n\nvar md = { device: target };\nif (ts !== null) { md.ts = \"\" + ts; }\n\nreturn { msg: values, metadata: md, msgType: \"POST_TELEMETRY_REQUEST\" };",
+          "tbelScript": "return msg;"
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1090,
+          "layoutY": 235
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "Has device",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "return metadata.device !== \"\" && metadata.device != null;",
+          "tbelScript": "return true;"
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1300,
+          "layoutY": 235
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.action.TbCreateRelationNode",
+        "name": "Create + route to device",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 1,
+        "configuration": {
+          "direction": "TO",
+          "relationType": "Contains",
+          "entityType": "DEVICE",
+          "entityNamePattern": "${device}",
+          "entityTypePattern": "mWater point",
+          "createEntityIfNotExists": true,
+          "changeOriginatorToRelatedEntity": true,
+          "removeCurrentRelations": false
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1510,
+          "layoutY": 235
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "save",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 1,
+        "configuration": {
+          "processingSettings": {
+            "type": "ON_EVERY_MESSAGE"
+          },
+          "defaultTTL": 0,
+          "useServerTs": false
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1720,
+          "layoutY": 235
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 3,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 4,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 5,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 5,
+        "toIndex": 6,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 6,
+        "toIndex": 7,
+        "type": "True"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 8,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}

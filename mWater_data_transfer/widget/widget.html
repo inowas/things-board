@@ -1,0 +1,97 @@
+<div class="mw">
+  <div class="mw-card">
+    <div class="mw-head">
+      <div class="mw-title">Add dataset</div>
+      <button id="mw-help-btn" class="mw-help-btn" type="button" title="How to use">?</button>
+    </div>
+
+    <div class="mw-seg">
+      <button id="mw-mode-single" class="active" type="button">Single device</button>
+      <button id="mw-mode-split" type="button">Split by point</button>
+    </div>
+
+    <div class="mw-grid">
+      <div class="mw-field" id="f-device">
+        <label>Device name</label>
+        <input type="text" id="mw-device" placeholder="e.g. Nukus climate" />
+      </div>
+      <div class="mw-field" id="f-prefix" style="display:none">
+        <label>Prefix (optional)</label>
+        <input type="text" id="mw-prefix" placeholder="optional" />
+      </div>
+      <div class="mw-field" id="f-point" style="display:none">
+        <label>Point column</label>
+        <input type="text" id="mw-pointfield" placeholder="e.g. Name" />
+      </div>
+      <div class="mw-field">
+        <label>Date column</label>
+        <input type="text" id="mw-datefield" placeholder="Date" />
+      </div>
+      <div class="mw-field grow">
+        <label>mWater JSON export URL</label>
+        <input type="text" id="mw-url" placeholder="https://api.mwater.co/...json" />
+      </div>
+    </div>
+
+    <div class="mw-actions">
+      <label class="mw-check"><input type="checkbox" id="mw-enabled" checked /> sync</label>
+      <button id="mw-add" class="primary" type="button">Add dataset</button>
+    </div>
+  </div>
+
+  <div class="mw-card">
+    <div class="mw-title" style="margin-bottom:14px;">Datasets</div>
+    <table class="mw-table">
+      <thead><tr><th>Sync</th><th>Target</th><th>Date</th><th>Point</th><th>URL</th><th></th></tr></thead>
+      <tbody id="mw-list"></tbody>
+    </table>
+    <div class="mw-empty" id="mw-empty">No datasets yet.</div>
+    <div class="mw-footer">
+      <button id="mw-save" class="primary" type="button">Save</button>
+      <button id="mw-reload" class="ghost" type="button">Reload</button>
+      <span id="mw-status"></span>
+    </div>
+  </div>
+
+  <div class="mw-modal" id="mw-help-modal">
+    <div class="mw-modal-box">
+      <div class="mw-modal-head">
+        <h2>How to use the mWater&nbsp;Sync widget</h2>
+        <button class="mw-modal-close" id="mw-help-close" type="button">&#10005;</button>
+      </div>
+      <div class="mw-doc">
+        <p>This widget copies data from mWater into ThingsBoard and keeps it up to date automatically &mdash; no manual exports. Below: how to get the export link, what the buttons do, and how it all works.</p>
+
+        <h3>1. Get the mWater export link</h3>
+        <ol>
+          <li>In mWater, open the menu <b>Manage &rarr; Integrations</b>, then click <b>+ New Export Integration</b> (top right).</li>
+          <li>Set a <b>Name of Integration</b>. For full history, leave <b>Maximum Rows</b> empty (empty = no limit). Use <b>Add Column</b> to include the columns you need: the date, the point column (if there are several measurement points), and the measured parameters.</li>
+          <li>At the bottom, in <b>URL Preview</b>, switch the format to <b>JSON</b> and copy the link. This is the link you paste into the widget.</li>
+        </ol>
+        <div class="note">The link should open in a browser and show a JSON array (it starts with a square bracket). The format must be <b>JSON</b>, not CSV.</div>
+
+        <h3>2. Widget fields and buttons</h3>
+        <ul>
+          <li><b>Single device / Split by point</b> &mdash; the mode. <b>Single device</b>: all rows go to one device (fill in <b>Device name</b>). <b>Split by point</b>: data is split per measurement point &mdash; each point into its own device (fill in <b>Point column</b> = the name of the column holding the point name, e.g. <code>Name</code>; the <b>Prefix</b> field is optional).</li>
+          <li><b>mWater JSON export URL</b> &mdash; the link from step 1.</li>
+          <li><b>Date column</b> &mdash; the name of the column holding the date (e.g. <code>Date</code>, <code>Time</code>, or <code>submitted on</code>).</li>
+          <li><b>sync</b> &mdash; the sync checkbox. On: the dataset keeps updating. Turn it off once the history is loaded, so it is not re-uploaded on every run.</li>
+          <li><b>Add dataset</b> &mdash; adds a row to the list (on screen only for now).</li>
+          <li><b>Save</b> &mdash; writes the list. Changes take effect only after Save.</li>
+          <li><b>Reload</b> &mdash; re-reads the saved list (discards unsaved edits).</li>
+        </ul>
+
+        <h3>3. How it works under the hood</h3>
+        <ul>
+          <li>The dataset list is stored as a <code>datasets</code> attribute on the <b>mWater config</b> device. The widget simply edits this attribute.</li>
+          <li>A dedicated rule chain, <b>mWater Sync (auto-create)</b>, reads the list on a timer and transfers the data.</li>
+          <li>The update frequency is set by the <b>Tick</b> node ("Generation frequency in seconds"). For static history, once a day (<code>86400</code>) is plenty. This node's originator is the <b>mWater config</b> device.</li>
+          <li><b>Devices are created automatically.</b> If a point has no device yet, the chain creates one (type <code>mWater point</code>) &mdash; no need to create them by hand.</li>
+          <li><b>The access token is taken automatically</b> from your ThingsBoard session and refreshes itself &mdash; nothing to copy.</li>
+          <li><b>Administrator rights</b> (tenant admin) are required, otherwise the widget cannot read or write the list and data.</li>
+        </ul>
+        <div class="note">The widget itself lives in <b>Resources &rarr; Widgets library &rarr; Widgets bundles &rarr; Custom tools</b> &mdash; from there it can be added to any dashboard.</div>
+      </div>
+    </div>
+  </div>
+</div>

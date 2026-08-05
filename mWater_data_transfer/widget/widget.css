@@ -1,0 +1,53 @@
+.mw { max-width: 900px; margin: 0 auto; font-family: Roboto, "Segoe UI", Arial, sans-serif; color: #2b2f36; font-size: 13px; box-sizing: border-box; }
+.mw *, .mw *::before, .mw *::after { box-sizing: border-box; }
+.mw-card { background: #fff; border: 1px solid #e4e7eb; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
+.mw-card + .mw-card { margin-top: 14px; }
+.mw-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.mw-title { font-size: 14px; font-weight: 600; color: #1f2937; }
+.mw-help-btn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #cdd3da; background: #fff; color: #305680; font-weight: 700; cursor: pointer; line-height: 1; }
+.mw-help-btn:hover { background: #305680; color: #fff; }
+
+.mw-seg { display: inline-flex; border: 1px solid #cdd3da; border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.mw-seg button { border: none; background: #fff; color: #4b5563; padding: 7px 16px; font-size: 13px; cursor: pointer; }
+.mw-seg button + button { border-left: 1px solid #cdd3da; }
+.mw-seg .active { background: #305680; color: #fff; }
+
+.mw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 14px; }
+.mw-field { display: flex; flex-direction: column; gap: 5px; }
+.mw-field.grow { grid-column: 1 / -1; }
+.mw-field label { font-size: 11px; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: .03em; }
+.mw input[type=text] { padding: 8px 10px; border: 1px solid #cdd3da; border-radius: 6px; font-size: 13px; width: 100%; }
+.mw input[type=text]:focus { border-color: #305680; outline: none; box-shadow: 0 0 0 3px rgba(48,86,128,.12); }
+
+.mw-actions { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+.mw-check { display: inline-flex; align-items: center; gap: 6px; color: #4b5563; cursor: pointer; }
+
+.mw button.primary { background: #305680; color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; cursor: pointer; }
+.mw button.primary:hover { background: #284a6e; }
+.mw button.ghost { background: #fff; color: #4b5563; border: 1px solid #cdd3da; border-radius: 6px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+.mw button.ghost:hover { background: #f4f6f8; }
+
+.mw-table { width: 100%; border-collapse: collapse; }
+.mw-table th { text-align: left; font-size: 11px; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: .03em; padding: 8px 10px; border-bottom: 1px solid #e4e7eb; }
+.mw-table td { padding: 9px 10px; border-bottom: 1px solid #f0f2f4; vertical-align: middle; }
+.mw-table tr:hover td { background: #fafbfc; }
+.mw-table .c { text-align: center; width: 1%; white-space: nowrap; }
+.mw-table .url { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #6b7280; font-size: 12px; }
+.mw-table button.del { background: transparent; border: none; color: #b9424a; font-size: 14px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.mw-table button.del:hover { background: #fbeaec; }
+.mw-empty { color: #9aa3af; font-size: 13px; padding: 14px 4px; }
+
+.mw-footer { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.mw #mw-status { font-size: 12.5px; color: #6b7280; }
+
+.mw-modal { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(17,24,39,.5); z-index: 1000; align-items: flex-start; justify-content: center; padding: 32px 16px; }
+.mw-modal-box { background: #fff; border-radius: 12px; max-width: 720px; width: 100%; max-height: 88vh; overflow: auto; box-shadow: 0 10px 40px rgba(16,24,40,.25); }
+.mw-modal-head { position: sticky; top: 0; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #eef0f2; }
+.mw-modal-head h2 { font-size: 16px; margin: 0; color: #1f2937; }
+.mw-modal-close { border: none; background: transparent; font-size: 20px; color: #6b7280; cursor: pointer; line-height: 1; }
+.mw-doc { padding: 8px 22px 24px; color: #374151; line-height: 1.55; font-size: 13.5px; }
+.mw-doc h3 { font-size: 14px; color: #305680; margin: 22px 0 8px; }
+.mw-doc ol, .mw-doc ul { margin: 6px 0 6px 18px; padding: 0; }
+.mw-doc li { margin: 5px 0; }
+.mw-doc code { background: #f2f4f7; border: 1px solid #e4e7eb; border-radius: 4px; padding: 1px 5px; font-size: 12.5px; }
+.mw-doc .note { background: #f7f9fb; border-left: 3px solid #305680; border-radius: 4px; padding: 8px 12px; margin: 10px 0; }
