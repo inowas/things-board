@@ -1,0 +1,157 @@
+{
+  "ruleChain": {
+    "name": "INOWAS partner inbox",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": true,
+    "configuration": null,
+    "additionalInfo": {
+      "description": "Runs on the INOWAS instance. Assign it to the device profile of the inbox device that partners post to. Splits incoming data into one device per source device."
+    }
+  },
+  "metadata": {
+    "version": 2,
+    "firstNodeIndex": 0,
+    "nodes": [
+      {
+        "type": "org.thingsboard.rule.engine.filter.TbMsgTypeSwitchNode",
+        "name": "Message type",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "version": 0
+        },
+        "additionalInfo": {
+          "description": "Routes incoming messages by type.",
+          "layoutX": 140,
+          "layoutY": 220
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Split by source device",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "// Splits incoming partner data into one device per source device.\nvar name = msg.srcDevice ? (\"\" + msg.srcDevice).trim() : \"\";\n\nvar values = {};\nfor (var k in msg) {\n    if (k === \"srcDevice\") { continue; }\n    var v = msg[k];\n    if (v === null || v === \"\") { continue; }\n    if (typeof v === \"object\") { continue; }\n    values[k] = v;\n}\n\nvar md = { device: name };\nif (metadata.ts) { md.ts = metadata.ts; }\n\nreturn { msg: values, metadata: md, msgType: \"POST_TELEMETRY_REQUEST\" };",
+          "tbelScript": "return msg;"
+        },
+        "additionalInfo": {
+          "description": "Reads srcDevice and prepares the telemetry values.",
+          "layoutX": 400,
+          "layoutY": 220
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "Has device",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "return metadata.device !== \"\" && metadata.device != null;",
+          "tbelScript": "return true;"
+        },
+        "additionalInfo": {
+          "description": "Drops messages without a source device name.",
+          "layoutX": 650,
+          "layoutY": 220
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.action.TbCreateRelationNode",
+        "name": "Create + route to device",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 1,
+        "configuration": {
+          "direction": "TO",
+          "relationType": "Contains",
+          "entityType": "DEVICE",
+          "entityNamePattern": "${device}",
+          "entityTypePattern": "INOWAS partner device",
+          "createEntityIfNotExists": true,
+          "changeOriginatorToRelatedEntity": true,
+          "removeCurrentRelations": false
+        },
+        "additionalInfo": {
+          "description": "Creates the partner device if missing and routes data to it.",
+          "layoutX": 900,
+          "layoutY": 220
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "save",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 1,
+        "configuration": {
+          "processingSettings": {
+            "type": "ON_EVERY_MESSAGE"
+          },
+          "defaultTTL": 0,
+          "useServerTs": false
+        },
+        "additionalInfo": {
+          "description": "Writes the time series.",
+          "layoutX": 1150,
+          "layoutY": 220
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "Post telemetry"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 3,
+        "type": "True"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 4,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}

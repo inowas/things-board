@@ -1,0 +1,174 @@
+{
+  "ruleChain": {
+    "name": "NbSWISE VUB — Forward telemetry to INOWAS",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": true,
+    "configuration": null,
+    "additionalInfo": {
+      "description": "NbSWISE / VUB. Assign this rule chain to a device profile called 'INOWAS shared'. Devices using that profile keep storing data locally and forward live telemetry to the INOWAS instance. For historical data, run the companion script migrate_history_to_inowas.py once."
+    }
+  },
+  "metadata": {
+    "version": 1,
+    "firstNodeIndex": 0,
+    "nodes": [
+      {
+        "type": "org.thingsboard.rule.engine.filter.TbMsgTypeSwitchNode",
+        "name": "Message type",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "version": 0
+        },
+        "additionalInfo": {
+          "layoutX": 140,
+          "layoutY": 240,
+          "description": "Routes incoming device messages by type."
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "Save locally",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 1,
+        "configuration": {
+          "processingSettings": {
+            "type": "ON_EVERY_MESSAGE"
+          },
+          "defaultTTL": 0,
+          "useServerTs": false
+        },
+        "additionalInfo": {
+          "layoutX": 420,
+          "layoutY": 120,
+          "description": "Stores telemetry on the partner instance as usual."
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "Save attributes",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 2,
+        "configuration": {
+          "scope": "CLIENT_SCOPE",
+          "notifyDevice": false,
+          "sendAttributesUpdatedNotification": false,
+          "updateAttributesOnlyOnValueChange": true,
+          "processingSettings": {
+            "type": "ON_EVERY_MESSAGE"
+          }
+        },
+        "additionalInfo": {
+          "layoutX": 420,
+          "layoutY": 380,
+          "description": "Stores client attributes as usual."
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "Tag with device name",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "scriptLang": "JS",
+          "jsScript": "// ==== Set by INOWAS before sending. Partners do not edit this. ====\nvar PREFIX = \"NbSWISE-VUB\";\n// ==================================================================\n\nvar name = metadata.deviceName || metadata.originatorName || \"unknown device\";\nif (PREFIX) { name = PREFIX + \" - \" + name; }\n\nvar ts = metadata.ts ? parseInt(metadata.ts, 10) : Date.now();\n\nvar values = {};\nfor (var k in msg) {\n    var v = msg[k];\n    if (v === null || v === \"\") { continue; }\n    if (typeof v === \"object\") { continue; }\n    values[k] = v;\n}\nvalues.srcDevice = name;\n\nreturn { msg: { ts: ts, values: values }, metadata: metadata, msgType: \"POST_TELEMETRY_REQUEST\" };",
+          "tbelScript": "return msg;"
+        },
+        "additionalInfo": {
+          "layoutX": 700,
+          "layoutY": 120,
+          "description": "Adds srcDevice so INOWAS can split the data per device."
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.rest.TbRestApiCallNode",
+        "name": "Send to INOWAS",
+        "debugSettings": {
+          "failuresEnabled": true,
+          "allEnabled": false,
+          "allEnabledUntil": 0
+        },
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 3,
+        "configuration": {
+          "restEndpointUrlPattern": "https://dashboards.inowas.org/api/v1/QIw6pUpvYIrueHmlEa6Y/telemetry",
+          "requestMethod": "POST",
+          "useSimpleClientHttpFactory": true,
+          "parseToPlainText": false,
+          "ignoreRequestBody": false,
+          "enableProxy": false,
+          "useSystemProxyProperties": false,
+          "proxyScheme": null,
+          "proxyHost": null,
+          "proxyPort": 0,
+          "proxyUser": null,
+          "proxyPassword": null,
+          "readTimeoutMs": 0,
+          "maxParallelRequestsCount": 10,
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "credentials": {
+            "type": "anonymous"
+          },
+          "maxInMemoryBufferSizeInKb": 256
+        },
+        "additionalInfo": {
+          "layoutX": 980,
+          "layoutY": 120,
+          "description": "Sends live telemetry to the INOWAS instance."
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "Post telemetry"
+      },
+      {
+        "fromIndex": 0,
+        "toIndex": 3,
+        "type": "Post telemetry"
+      },
+      {
+        "fromIndex": 0,
+        "toIndex": 2,
+        "type": "Post attributes"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 4,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}
